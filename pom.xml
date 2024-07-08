@@ -16,6 +16,8 @@
 
   <modules>
     <module>eureka-server</module>
+    <module>client</module>
+    <module>gateway</module>
     <!-- Добавьте сюда другие модули по мере необходимости -->
   </modules>
 
