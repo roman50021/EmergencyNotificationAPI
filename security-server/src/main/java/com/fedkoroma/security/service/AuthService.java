@@ -1,12 +1,15 @@
 package com.fedkoroma.security.service;
 
+import com.fedkoroma.security.model.Role;
 import com.fedkoroma.security.model.User;
 import com.fedkoroma.security.repository.UserRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -15,11 +18,17 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public String saveUser(User user){
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRegisteredAt(LocalDateTime.now());
-        userRepository.save(user);
-        return "User saved in system";
+    public String saveUser(@Valid User user) {
+        Optional<User> existingUser = userRepository.findByEmail(user.getEmail());
+        if(existingUser.isPresent()){
+            return "User with this email already exists";
+        } else {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            user.setRegisteredAt(LocalDateTime.now());
+            user.setRole(Role.USER);
+            userRepository.save(user);
+            return "User saved in system";
+        }
     }
 
     public String generateToken(String email){

@@ -1,9 +1,8 @@
 package com.fedkoroma.security.model;
 
 import com.fedkoroma.security.model.contract.AbstractEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,14 +20,32 @@ import java.util.UUID;
 @AllArgsConstructor
 @Table(name = "app_users")
 public class User extends AbstractEntity implements UserDetails{
+
     @Column(name = "email", nullable = false)
+    @NotBlank(message = "Email is mandatory")
+    @Email(message = "Email should be valid")
     private String email;
-    @Column(name = "name", nullable = false)
-    private String name;
+
+    @Column(name = "first_name", nullable = false)
+    @NotBlank(message = "First Name is mandatory")
+    @Size(max = 50, message = "FirstName should not exceed 50 characters")
+    private String  firstName;
+
+    @Column(name = "last_name", nullable = false)
+    @NotBlank(message = "FirstName is mandatory")
+    @Size(max = 50, message = "Last Name should not exceed 50 characters")
+    private String  lastName;
+
     @Column(name = "password", nullable = false)
+    @NotBlank(message = "Password is mandatory")
+    @Size(min = 8, message = "Password should have at least 8 characters")
     private String password;
+
     @Column(name = "registered_at", nullable = false)
     private LocalDateTime registeredAt;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @Override
     public UUID getId() {
