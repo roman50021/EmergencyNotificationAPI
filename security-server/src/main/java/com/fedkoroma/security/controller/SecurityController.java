@@ -59,6 +59,4 @@ public class SecurityController {
         authService.validateToken(token);
         return ResponseEntity.ok("Token is valid");
     }
-
-
 }
