@@ -1,7 +1,9 @@
 package com.fedkoroma.security.controller;
 
 import com.fedkoroma.security.dto.AuthRequest;
+import com.fedkoroma.security.dto.MessageResponse;
 import com.fedkoroma.security.model.User;
+import com.fedkoroma.security.repository.UserRepository;
 import com.fedkoroma.security.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -20,10 +24,17 @@ public class SecurityController {
 
     public final AuthService authService;
     private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
 
     @PostMapping("/register")
-    public ResponseEntity<String> addUser(@Valid @RequestBody User user){
-        return ResponseEntity.ok(authService.saveUser(user));
+    public ResponseEntity<?> addUser(@Valid @RequestBody User user) {
+        Optional<User> existingUser = userRepository.findByEmail(user.getEmail());
+        if(existingUser.isPresent()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("User with this email already exists"));
+        } else {
+            authService.saveUser(user);
+            return ResponseEntity.ok(new MessageResponse("User saved in system"));
+        }
     }
 
     @PostMapping("/token")
@@ -36,17 +47,17 @@ public class SecurityController {
                 String token = authService.generateToken(authRequest.getEmail());
                 return ResponseEntity.ok(token);
             } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid access");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Invalid access"));
             }
         } catch (AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Invalid email or password"));
         }
     }
 
     @GetMapping("/validate")
-    public String validateToken(@RequestParam("token") String token){
+    public  ResponseEntity<String> validateToken(@RequestParam("token") String token){
         authService.validateToken(token);
-        return "Token is valid";
+        return ResponseEntity.ok("Token is valid");
     }
 
 

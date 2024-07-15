@@ -1,13 +1,11 @@
 package com.fedkoroma.security.service;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -21,11 +19,13 @@ public class JwtService {
     @Value("${JWT_SECRET}")
     public String SECRET;
 
-
-    public void validateToken(final String token) {
-        Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token);
+    public void validateToken(final String token){
+        try {
+            Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token);
+        } catch (SignatureException ex) {
+            throw ex; // Позволяет глобальному обработчику перехватывать исключение
+        }
     }
-
 
     public String generateToken(String email) {
         Map<String, Object> claims = new HashMap<>();
