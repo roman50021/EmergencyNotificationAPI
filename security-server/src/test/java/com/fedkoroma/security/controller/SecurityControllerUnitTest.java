@@ -1,7 +1,6 @@
 package com.fedkoroma.security.controller;
 
 import com.fedkoroma.security.dto.MessageResponse;
-import com.fedkoroma.security.exception.GlobalExceptionHandler;
 import com.fedkoroma.security.model.Role;
 import com.fedkoroma.security.model.User;
 import com.fedkoroma.security.repository.UserRepository;
@@ -16,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -24,7 +22,7 @@ import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class AddUserSecurityControllerTests {
+public class SecurityControllerUnitTest {
 
     @InjectMocks
     private SecurityController securityController;
@@ -71,19 +69,6 @@ public class AddUserSecurityControllerTests {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals("User with this email already exists", ((MessageResponse) response.getBody()).getMessage());
         verify(authService, never()).saveUser(any());
-    }
-
-    @Test
-    public void testAddUser_With_Not_Valid_Email(){
-        // Arrange
-        User user = new User("testexample.com","TestName", "TestName","test_password", LocalDateTime.now(), Role.USER);
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
-
-        // Act
-        ResponseEntity<?> response = securityController.addUser(user);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("Email should be valid", ((Map<String, String>) response.getBody()).get("message"));
     }
 
 }

@@ -36,3 +36,4 @@ build/
 
 ### Mac OS ###
 .DS_Store
+/security-server/src/test/resources/application-test.properties
