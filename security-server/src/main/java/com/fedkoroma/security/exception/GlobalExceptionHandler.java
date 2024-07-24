@@ -3,6 +3,7 @@ package com.fedkoroma.security.exception;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -37,6 +38,34 @@ public class GlobalExceptionHandler {
         errorResponse.put("message", "Invalid JWT signature");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
+
+    // Обработка кастомных исключений для неподтвержденного аккаунта
+    @ExceptionHandler(AccountNotConfirmedException.class)
+    public ResponseEntity<Map<String, String>> handleAccountNotConfirmedException(AccountNotConfirmedException ex) {
+        log.error("Account not confirmed exception: ", ex);
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
+
+    // Обработка кастомных исключений для заблокированного аккаунта
+    @ExceptionHandler(AccountLockedException.class)
+    public ResponseEntity<Map<String, String>> handleAccountLockedException(AccountLockedException ex) {
+        log.error("Account locked exception: ", ex);
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
+
+    // Обработка кастомных исключений для недействительного доступа
+    @ExceptionHandler(InvalidAccessException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidAccessException(InvalidAccessException ex) {
+        log.error("Invalid access exception: ", ex);
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
 
     // Обработка всех остальных исключений
     @ExceptionHandler(Exception.class)
