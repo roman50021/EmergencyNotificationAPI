@@ -46,50 +46,28 @@ public class SecurityController {
     @PostMapping("/token")
     public ResponseEntity<?> getToken(@Valid @RequestBody AuthRequest authRequest) {
         try {
-            // Пытаемся аутентифицировать пользователя
             Authentication authenticate = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword()));
 
-            // Проверяем, прошла ли аутентификация
-            if (authenticate.isAuthenticated()) {
-                UserDetails userDetails = (UserDetails) authenticate.getPrincipal();
-                // Ищем пользователя в репозитории
-                User user = userRepository.findByEmail(userDetails.getUsername()).orElse(null);
+            UserDetails userDetails = (UserDetails) authenticate.getPrincipal();
+            User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow(
+                    () -> new DisabledException("User not found")
+            );
 
-                // Если пользователь не найден, возвращаем ошибку
-                if (user == null) {
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("User not found"));
-                }
-
-                // Проверяем состояние аккаунта пользователя
-                if (!user.isEnabled()) {
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Confirm your account by email"));
-                }
-
-                if (!user.isAccountNonLocked()) {
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Your account has been blocked"));
-                }
-
-                // Генерируем токен (или другую нужную информацию)
-                String token = authService.generateToken(authRequest.getEmail());
-                return ResponseEntity.ok(token);
+            if (!user.isEnabled()) {
+                throw new DisabledException("Confirm your account by email");
             }
 
-            // Если аутентификация не прошла, возвращаем ошибку
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Invalid email or password"));
+            if (!user.isAccountNonLocked()) {
+                throw new LockedException("Your account has been blocked");
+            }
 
-        } catch (DisabledException e) {
-            // Обработка случая, когда аккаунт отключен
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Your account is disabled"));
-        } catch (LockedException e) {
-            // Обработка случая, когда аккаунт заблокирован
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Your account has been blocked"));
-        } catch (AccountNotConfirmedException e) {
-            // Обработка случая, когда аккаунт не подтвержден
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Confirm your account by email"));
+            String token = authService.generateToken(authRequest.getEmail());
+            return ResponseEntity.ok(token);
+        } catch (DisabledException | LockedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse(e.getMessage()));
         } catch (Exception e) {
-            // Обработка других исключений
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("An unexpected error occurred"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Invalid email or password"));
         }
     }
 
@@ -97,5 +75,10 @@ public class SecurityController {
     public  ResponseEntity<String> validateToken(@RequestParam("token") String token){
         authService.validateToken(token);
         return ResponseEntity.ok("Token is valid");
+    }
+
+    @GetMapping(path = "confirm")
+    public String confirm(@RequestParam("token") String token) {
+        return authService.confirmToken(token);
     }
 }
