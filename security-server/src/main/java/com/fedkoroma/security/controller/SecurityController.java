@@ -78,7 +78,7 @@ public class SecurityController {
     }
 
     @GetMapping(path = "confirm")
-    public String confirm(@RequestParam("token") String token) {
+    public ResponseEntity<String> confirm(@RequestParam("token") String token) {
         return authService.confirmToken(token);
     }
 }
