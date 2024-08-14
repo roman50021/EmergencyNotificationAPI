@@ -1,6 +1,5 @@
-version: "2.1"
+version: '3.8'
 services:
-
   maildev:
     image: maildev/maildev
     ports:
@@ -11,6 +10,15 @@ services:
       - MAILDEV_WEB_PORT=1080
 
   rabbitmq:
-    image: rabbitmq:3.10.7-management
+    container_name: rabbitmq-new
+    image: rabbitmq:3-management
     ports:
-      - 15672:15672
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME} # RabbitMQ username
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD} # RabbitMQ password
+
+
+networks:
+  mynetwork:
