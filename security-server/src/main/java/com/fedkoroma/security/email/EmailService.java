@@ -48,18 +48,18 @@ public class EmailService {
     }
 
     private String generateEmailBody(EmailDetailDTO emailDetailDTO) {
-        String templateName = emailDetailDTO.getTemplateName();
-        String template = loadEmailTemplate(templateName);
-
+        String template = loadEmailTemplate(emailDetailDTO.getTemplateName());
         String body = template;
+
         if (emailDetailDTO.getDynamicValue() != null) {
             for (Map.Entry<String, Object> entry : emailDetailDTO.getDynamicValue().entrySet()) {
                 body = body.replace("{{" + entry.getKey() + "}}", entry.getValue().toString());
             }
         }
 
-        return body;
+        return body.replace("{link}", emailDetailDTO.getDynamicValue().get("token").toString());
     }
+
 
     private String loadEmailTemplate(String templateName) {
         ClassPathResource resource = new ClassPathResource("templates/" + templateName + ".html");
