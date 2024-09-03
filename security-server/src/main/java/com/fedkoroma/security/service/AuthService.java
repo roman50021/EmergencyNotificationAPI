@@ -1,5 +1,6 @@
 package com.fedkoroma.security.service;
 
+import com.fedkoroma.security.dto.UserRegistrationDTO;
 import com.fedkoroma.security.email.EmailDetailDTO;
 import com.fedkoroma.security.model.ConfirmationToken;
 import com.fedkoroma.security.model.Role;
@@ -34,8 +35,12 @@ public class AuthService {
     @Value("${rabbitmq.binding.email.name}")
     private String emailRoutingKey;
 
-    public void saveUser(@Valid User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+    public void saveUser(@Valid UserRegistrationDTO userDto) {
+        User user = new User();
+        user.setEmail(userDto.getEmail());
+        user.setFirstName(userDto.getFirstName());
+        user.setLastName(userDto.getLastName());
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setRegisteredAt(LocalDateTime.now());
         user.setRole(Role.USER);
         userRepository.save(user);
@@ -52,8 +57,8 @@ public class AuthService {
 
         String link = "http://localhost:8765/auth/confirm?token=" + token;
         sendEmail(user, link, "Email Verification");
-
     }
+
 
     public String generateToken(String email){
         return jwtService.generateToken(email);
