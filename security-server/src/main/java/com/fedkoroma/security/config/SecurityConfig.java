@@ -16,10 +16,19 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/auth/register", "/auth/token", "/auth/validate", "/auth/confirm")
-                        .permitAll())
+                        .requestMatchers(
+                                "/auth/register",
+                                "/auth/token",
+                                "/auth/validate",
+                                "/auth/confirm",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**", // Важно добавить этот путь
+                                "/v3/api-docs/**" // Путь для API документации
+                        )
+                        .permitAll()
+                        .anyRequest().authenticated()
+                )
                 .build();
     }
-
 }
 

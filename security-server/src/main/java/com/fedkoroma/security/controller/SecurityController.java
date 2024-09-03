@@ -2,6 +2,7 @@ package com.fedkoroma.security.controller;
 
 import com.fedkoroma.security.dto.AuthRequest;
 import com.fedkoroma.security.dto.MessageResponse;
+import com.fedkoroma.security.dto.UserRegistrationDTO;
 import com.fedkoroma.security.model.User;
 import com.fedkoroma.security.repository.UserRepository;
 import com.fedkoroma.security.service.AuthService;
@@ -31,12 +32,12 @@ public class SecurityController {
     private final UserRepository userRepository;
 
     @PostMapping("/register")
-    public ResponseEntity<?> addUser(@Valid @RequestBody User user) {
-        Optional<User> existingUser = userRepository.findByEmail(user.getEmail());
+    public ResponseEntity<?> addUser(@Valid @RequestBody UserRegistrationDTO userDto) {
+        Optional<User> existingUser = userRepository.findByEmail(userDto.getEmail());
         if(existingUser.isPresent()){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("User with this email already exists"));
         } else {
-            authService.saveUser(user);
+            authService.saveUser(userDto);
             return ResponseEntity.ok(new MessageResponse("User saved in system"));
         }
     }
