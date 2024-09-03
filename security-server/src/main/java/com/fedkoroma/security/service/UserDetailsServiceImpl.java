@@ -1,6 +1,5 @@
 package com.fedkoroma.security.service;
 
-import com.fedkoroma.security.model.User;
 import com.fedkoroma.security.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

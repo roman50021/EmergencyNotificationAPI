@@ -2,8 +2,6 @@ package com.fedkoroma.security.controller;
 
 import com.fedkoroma.security.dto.AuthRequest;
 import com.fedkoroma.security.dto.MessageResponse;
-import com.fedkoroma.security.exception.AccountLockedException;
-import com.fedkoroma.security.exception.AccountNotConfirmedException;
 import com.fedkoroma.security.model.User;
 import com.fedkoroma.security.repository.UserRepository;
 import com.fedkoroma.security.service.AuthService;
