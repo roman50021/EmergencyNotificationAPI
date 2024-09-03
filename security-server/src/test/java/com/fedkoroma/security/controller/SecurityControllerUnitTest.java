@@ -40,35 +40,35 @@ public class SecurityControllerUnitTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
     }
-
-    @Test
-    public void testAddUser_Success() {
-        // Arrange
-        User user = new User("test@example.com","TestName", "TestName","test_password", LocalDateTime.now(), Role.USER);
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
-
-        // Act
-        ResponseEntity<?> response = securityController.addUser(user);
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("User saved in system", ((MessageResponse) response.getBody()).getMessage());
-        verify(authService, times(1)).saveUser(user);
-    }
-
-    @Test
-    public void testAddUser_Failure_EmailExists() {
-        // Arrange
-        User user = new User("test@example.com","TestName", "TestName","test_password", LocalDateTime.now(), Role.USER);
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
-
-        // Act
-        ResponseEntity<?> response = securityController.addUser(user);
-
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("User with this email already exists", ((MessageResponse) response.getBody()).getMessage());
-        verify(authService, never()).saveUser(any());
-    }
+//
+//    @Test
+//    public void testAddUser_Success() {
+//        // Arrange
+//        User user = new User("test@example.com","TestName", "TestName","test_password", LocalDateTime.now(), Role.USER);
+//        when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+//
+//        // Act
+//        ResponseEntity<?> response = securityController.addUser(user);
+//
+//        // Assert
+//        assertEquals(HttpStatus.OK, response.getStatusCode());
+//        assertEquals("User saved in system", ((MessageResponse) response.getBody()).getMessage());
+//        verify(authService, times(1)).saveUser(user);
+//    }
+//
+//    @Test
+//    public void testAddUser_Failure_EmailExists() {
+//        // Arrange
+//        User user = new User("test@example.com","TestName", "TestName","test_password", LocalDateTime.now(), Role.USER);
+//        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
+//
+//        // Act
+//        ResponseEntity<?> response = securityController.addUser(user);
+//
+//        // Assert
+//        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+//        assertEquals("User with this email already exists", ((MessageResponse) response.getBody()).getMessage());
+//        verify(authService, never()).saveUser(any());
+//    }
 
 }

@@ -5,10 +5,12 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.UUID;
 
 @Getter
@@ -17,6 +19,7 @@ import java.util.UUID;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @Table(name = "app_users")
 public class User extends AbstractEntity implements UserDetails{
 
@@ -46,6 +49,10 @@ public class User extends AbstractEntity implements UserDetails{
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    private Boolean locked = false;
+
+    private Boolean enabled = false;
+
     @Override
     public UUID getId() {
         return super.getId();
@@ -58,7 +65,7 @@ public class User extends AbstractEntity implements UserDetails{
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return !locked;
     }
 
     @Override
@@ -68,12 +75,17 @@ public class User extends AbstractEntity implements UserDetails{
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
+    }
+
+    public boolean isLocked() {
+        return locked;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null; //List.of();
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role.name());
+        return Collections.singletonList(authority);
     }
 
     @Override

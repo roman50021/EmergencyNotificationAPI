@@ -1,0 +1,18 @@
+version: '3.8'  # specify your Docker Compose version
+services:
+  rabbitmq:
+    container_name: rabbitmq-new
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+
+  maildev:
+    image: maildev/maildev
+    container_name: maildev
+    ports:
+      - "1025:1025"  # SMTP сервер
+      - "1080:1080"  # Веб-интерфейс для просмотра писем
