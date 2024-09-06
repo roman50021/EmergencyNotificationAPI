@@ -39,8 +39,8 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 }
                 try {
                     // REST call to AUTH service
-                    template.getForObject("http://security-server/auth/validate?token=" + authHeader, String.class);
-                    jwtUtil.validateToken(authHeader);
+                    template.getForObject("http://security-server/auth/validate?token" + authHeader, String.class);
+//                    jwtUtil.validateToken(authHeader);
 
                 } catch (Exception e) {
                     System.out.println("invalid access...!");
