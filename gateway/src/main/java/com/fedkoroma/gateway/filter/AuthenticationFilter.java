@@ -8,8 +8,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import static io.netty.handler.codec.http.HttpHeaderValidationUtil.validateToken;
+
 @Component
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
+
 
     @Autowired
     private RouteValidator validator;
@@ -39,8 +42,8 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 }
                 try {
                     // REST call to AUTH service
-                    template.getForObject("http://security-server/auth/validate?token" + authHeader, String.class);
-//                    jwtUtil.validateToken(authHeader);
+//                    template.getForObject("http://security-server/auth/validate?token" + authHeader, String.class);
+                    jwtUtil.validateToken(authHeader);
 
                 } catch (Exception e) {
                     System.out.println("invalid access...!");
