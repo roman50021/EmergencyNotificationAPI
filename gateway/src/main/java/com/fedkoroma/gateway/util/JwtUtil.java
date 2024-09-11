@@ -37,7 +37,9 @@ public class JwtUtil {
     }
 
     public boolean isInvalid(String token) {
+        System.out.println("Проверяем токен - " + token);
         return this.validateJwtToken(token) || this.isTokenExpired(token);
+
     }
 
     private boolean validateJwtToken(String authToken) {

@@ -16,10 +16,12 @@ public class GatewayConfig {
     @Bean
     public RouteLocator routes(RouteLocatorBuilder builder) {
         return builder.routes()
-                .route("client-server",
-                        r -> r.path("/main/").filters(f -> f.filter(filter)).uri("lb://client-server"))
-                .route("security-server",
-                        r -> r.path("/auth/").filters(f -> f.filter(filter)).uri("lb://security-server"))
+                .route("client-server", r -> r.path("/main/**")
+                        .filters(f -> f.filter(filter)) // Фильтр, проверяющий токен
+                        .uri("lb://client-server"))
+                .route("security-server", r -> r.path("/auth/**")
+                        .filters(f -> f.filter(filter)) // Фильтр на маршрутах безопасности
+                        .uri("lb://security-server"))
                 .build();
     }
 
