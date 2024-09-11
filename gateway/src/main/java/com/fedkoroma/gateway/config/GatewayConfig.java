@@ -1,6 +1,6 @@
 package com.fedkoroma.gateway.config;
 
-import com.fedkoroma.gateway.filter.AuthenticationFilter;
+import com.fedkoroma.gateway.filter.DynamicAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
@@ -10,20 +10,22 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class GatewayConfig {
 
+    private final DynamicAuthenticationFilter dynamicAuthenticationFilter;
+
     @Autowired
-    AuthenticationFilter filter;
+    public GatewayConfig(DynamicAuthenticationFilter dynamicAuthenticationFilter) {
+        this.dynamicAuthenticationFilter = dynamicAuthenticationFilter;
+    }
 
     @Bean
     public RouteLocator routes(RouteLocatorBuilder builder) {
         return builder.routes()
                 .route("client-server", r -> r.path("/main/**")
-                        .filters(f -> f.filter(filter)) // Фильтр, проверяющий токен
+                        .filters(f -> f.filter(dynamicAuthenticationFilter.apply(new DynamicAuthenticationFilter.Config())))
                         .uri("lb://client-server"))
                 .route("security-server", r -> r.path("/auth/**")
-                        .filters(f -> f.filter(filter)) // Фильтр на маршрутах безопасности
+                        .filters(f -> f.filter(dynamicAuthenticationFilter.apply(new DynamicAuthenticationFilter.Config())))
                         .uri("lb://security-server"))
                 .build();
     }
-
-
 }
