@@ -3,7 +3,7 @@ package com.fedkoroma.gateway.filter;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 
 @Component

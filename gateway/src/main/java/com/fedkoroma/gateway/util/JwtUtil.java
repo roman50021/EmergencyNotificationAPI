@@ -1,6 +1,7 @@
 package com.fedkoroma.gateway.util;
 
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,10 +12,8 @@ import java.security.Key;
 @Component
 public class JwtUtil {
 
-
     @Value("${JWT_SECRET}")
     public String SECRET;
-
 
     public void validateToken(final String token) {
         Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token);
