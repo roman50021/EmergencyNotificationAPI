@@ -15,12 +15,13 @@
   </properties>
 
   <modules>
-    <module>eureka-server</module>
-    <module>client-server</module>
-    <module>gateway</module>
-    <module>security-server</module>
-    <module>sender-server</module>
-    <!-- Добавьте сюда другие модули по мере необходимости -->
+    <module>eureka-service</module>
+    <module>client-service</module>
+    <module>gateway-service</module>
+    <module>security-service</module>
+    <module>sender-service</module>
+    <module>config-service</module>
+      <!-- Добавьте сюда другие модули по мере необходимости -->
   </modules>
 
   <build>
