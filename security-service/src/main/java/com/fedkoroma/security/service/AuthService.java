@@ -1,5 +1,6 @@
 package com.fedkoroma.security.service;
 
+import com.fedkoroma.security.dto.UserDTO;
 import com.fedkoroma.security.dto.UserRegistrationDTO;
 import com.fedkoroma.security.email.EmailDetailDTO;
 import com.fedkoroma.security.model.ConfirmationToken;
@@ -57,6 +58,24 @@ public class AuthService {
 
         String link = "http://localhost:8765/auth/confirm?token=" + token;
         sendEmail(user, link, "Email Verification");
+
+        // Отправка события о создании пользователя в RabbitMQ
+        UserDTO userDTO = mapToUserDTO(user);
+        rabbitTemplate.convertAndSend("user.exchange", "user.created", userDTO);
+    }
+
+    // Метод преобразования User в UserDTO
+    private UserDTO mapToUserDTO(User user) {
+        return UserDTO.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .registeredAt(user.getRegisteredAt())
+                .role(user.getRole())
+                .locked(user.getLocked())
+                .enabled(user.getEnabled())
+                .build();
     }
 
 
@@ -98,6 +117,9 @@ public class AuthService {
         confirmationTokenService.setConfirmedAt(token);
         userRepository.enableUser(confirmationToken.getUser().getEmail());
 
+        // Отправка события об обновлении пользователя в RabbitMQ через UserDTO
+        UserDTO userDTO = mapToUserDTO(confirmationToken.getUser());
+        rabbitTemplate.convertAndSend("user.exchange", "user.updated", userDTO);
         return ResponseEntity.ok("confirmed");
     }
 
