@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="EmergencyNotificationSystemApiDB@localhost" uuid="0db5823e-7c89-4f73-8a7a-20505cdacd20">
+    <data-source source="LOCAL" name="SECURITY_DB@localhost" uuid="e9d74e45-186b-46a5-8ea9-bc742d35e683">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:5432/EmergencyNotificationSystemApiDB</jdbc-url>
+      <jdbc-url>jdbc:postgresql://localhost:5432/SECURITY_DB</jdbc-url>
       <jdbc-additional-properties>
         <property name="com.intellij.clouds.kubernetes.db.host.port" />
         <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />
@@ -13,11 +13,11 @@
       </jdbc-additional-properties>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
-    <data-source source="LOCAL" name="TestEmergencyNotificationSystemApiDB@localhost" uuid="bbc62237-f21d-4e17-803e-b1c97ddc6665">
+    <data-source source="LOCAL" name="CLIENT_DB@localhost" uuid="40cd6bf2-c9b4-4750-a796-af3de522bb10">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:5432/TestEmergencyNotificationSystemApiDB</jdbc-url>
+      <jdbc-url>jdbc:postgresql://localhost:5432/CLIENT_DB</jdbc-url>
       <jdbc-additional-properties>
         <property name="com.intellij.clouds.kubernetes.db.host.port" />
         <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />
