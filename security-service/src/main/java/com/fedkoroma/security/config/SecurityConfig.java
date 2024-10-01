@@ -21,6 +21,8 @@ public class SecurityConfig {
                                 "/auth/token",
                                 "/auth/validate",
                                 "/auth/confirm",
+
+                                ///Документація
                                 "/swagger-ui.html",
                                 "/swagger-ui/**", // Важно добавить этот путь
                                 "/v3/api-docs/**" // Путь для API документации

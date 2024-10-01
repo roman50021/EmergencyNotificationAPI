@@ -7,18 +7,19 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 public class UserEventListener {
 
+    private final UserRepository userRepository;
+
     @Autowired
-    private UserRepository userRepository;
+    public UserEventListener(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     // Обработчик события создания пользователя
     @RabbitListener(queues = "user.created.queue")
     public void handleUserCreatedEvent(UserDTO userDTO) {
-        // Преобразование и сохранение пользователя в базе данных ClientService
         User user = mapToUser(userDTO);
         userRepository.save(user);
         System.out.println("User created event received: " + user);
@@ -27,19 +28,12 @@ public class UserEventListener {
     // Обработчик события обновления пользователя
     @RabbitListener(queues = "user.updated.queue")
     public void handleUserUpdatedEvent(UserDTO userDTO) {
-        // Поиск пользователя в базе данных ClientService
-        Optional<User> optionalUser = userRepository.findById(userDTO.getId());
-
-        if (optionalUser.isPresent()) {
-            // Если пользователь найден, обновляем его данные
-            User user = optionalUser.get();
-            updateUser(user, userDTO);
-            userRepository.save(user);
-            System.out.println("User updated event processed: " + user);
-        } else {
-            // Если пользователь не найден, игнорируем обновление
-            System.out.println("User not found for update, ID: " + userDTO.getId());
-        }
+        userRepository.findById(userDTO.getId())
+                .map(existingUser -> updateUser(existingUser, userDTO))
+                .orElseGet(() -> {
+                    System.out.println("User not found for update, ID: " + userDTO.getId());
+                    return null;
+                });
     }
 
     // Преобразование UserDTO в сущность User
@@ -53,9 +47,12 @@ public class UserEventListener {
     }
 
     // Обновление существующего пользователя на основе UserDTO
-    private void updateUser(User user, UserDTO userDTO) {
+    private User updateUser(User user, UserDTO userDTO) {
         user.setEmail(userDTO.getEmail());
         user.setFirstName(userDTO.getFirstName());
         user.setLastName(userDTO.getLastName());
+        userRepository.save(user); // Не забывайте сохранять обновленного пользователя
+        System.out.println("User updated event processed: " + user);
+        return user;
     }
 }
