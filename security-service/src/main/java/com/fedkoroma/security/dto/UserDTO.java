@@ -19,9 +19,4 @@ public class UserDTO {
     private String email;
     private String firstName;
     private String lastName;
-    private LocalDateTime registeredAt;
-    private Role role;
-    private Boolean locked;
-    private Boolean enabled;
-
 }

@@ -71,10 +71,6 @@ public class AuthService {
                 .email(user.getEmail())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
-                .registeredAt(user.getRegisteredAt())
-                .role(user.getRole())
-                .locked(user.getLocked())
-                .enabled(user.getEnabled())
                 .build();
     }
 
