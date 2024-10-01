@@ -14,14 +14,20 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+///For ClientService
 public class UserDTO {
     private UUID id;
     private String email;
     private String firstName;
     private String lastName;
-    private LocalDateTime registeredAt;
-    private Role role;
-    private Boolean locked;
-    private Boolean enabled;
 
+    // Метод преобразования User в UserDTO
+    public static UserDTO fromUser(User user) {
+        return UserDTO.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .build();
+    }
 }

@@ -37,19 +37,4 @@ public class User {
     @Size(max = 50, message = "Last Name should not exceed 50 characters")
     private String  lastName;
 
-    @Column(name = "password", nullable = false)
-    @NotBlank(message = "Password is mandatory")
-    @Size(min = 8, message = "Password should have at least 8 characters")
-    private String password;
-
-    @Column(name = "registered_at", nullable = false)
-    private LocalDateTime registeredAt;
-
-    @Enumerated(EnumType.STRING)
-    private Role role;
-
-    private Boolean locked = false;
-
-    private Boolean enabled = false;
-
 }

@@ -37,47 +37,46 @@ public class AuthService {
     private String emailRoutingKey;
 
     public void saveUser(@Valid UserRegistrationDTO userDto) {
-        User user = new User();
-        user.setEmail(userDto.getEmail());
-        user.setFirstName(userDto.getFirstName());
-        user.setLastName(userDto.getLastName());
-        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        user.setRegisteredAt(LocalDateTime.now());
-        user.setRole(Role.USER);
+        User user = createUser(userDto);
         userRepository.save(user);
 
-        String token = UUID.randomUUID().toString();
-
-        ConfirmationToken confirmationToken = new ConfirmationToken(
-                token,
-                LocalDateTime.now(),
-                LocalDateTime.now().plusMinutes(15),
-                user
-        );
+        ConfirmationToken confirmationToken = createConfirmationToken(user);
         confirmationTokenService.saveConfirmationToken(confirmationToken);
 
-        String link = "http://localhost:8765/auth/confirm?token=" + token;
-        sendEmail(user, link, "Email Verification");
+        String verificationLink = createVerificationLink(confirmationToken.getToken());
+        sendEmail(user, verificationLink, "Email Verification");
 
         // Отправка события о создании пользователя в RabbitMQ
-        UserDTO userDTO = mapToUserDTO(user);
+        UserDTO userDTO = UserDTO.fromUser(user);
         rabbitTemplate.convertAndSend("user.exchange", "user.created", userDTO);
     }
 
-    // Метод преобразования User в UserDTO
-    private UserDTO mapToUserDTO(User user) {
-        return UserDTO.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .registeredAt(user.getRegisteredAt())
-                .role(user.getRole())
-                .locked(user.getLocked())
-                .enabled(user.getEnabled())
+    private User createUser(UserRegistrationDTO userDto) {
+        return User.builder()
+                .email(userDto.getEmail())
+                .firstName(userDto.getFirstName())
+                .lastName(userDto.getLastName())
+                .password(passwordEncoder.encode(userDto.getPassword()))
+                .registeredAt(LocalDateTime.now())
+                .role(Role.USER)
+                .locked(false)
+                .enabled(false)
                 .build();
     }
 
+    private ConfirmationToken createConfirmationToken(User user) {
+        String token = UUID.randomUUID().toString();
+        return new ConfirmationToken(
+                token,
+                LocalDateTime.now(),
+                LocalDateTime.now().plusMinutes(60),
+                user
+        );
+    }
+
+    private String createVerificationLink(String token) {
+        return "http://localhost:8765/auth/confirm?token=" + token;
+    }
 
     public String generateToken(String email){
         return jwtService.generateToken(email);
@@ -99,28 +98,22 @@ public class AuthService {
     }
 
     @Transactional
-    public ResponseEntity<String> confirmToken(String token){
+    public ResponseEntity<String> confirmToken(String token) {
         ConfirmationToken confirmationToken = confirmationTokenService
                 .getToken(token)
                 .orElseThrow(() -> new IllegalStateException("token not found"));
 
-        if(confirmationToken.getConfirmedAt() != null){
+        if (confirmationToken.getConfirmedAt() != null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("email already confirmed");
         }
 
-        LocalDateTime expiredAt =  confirmationToken.getExpiresAt();
-
-        if (expiredAt.isBefore(LocalDateTime.now())) {
+        if (confirmationToken.getExpiresAt().isBefore(LocalDateTime.now())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("token expired");
         }
 
         confirmationTokenService.setConfirmedAt(token);
         userRepository.enableUser(confirmationToken.getUser().getEmail());
 
-        // Отправка события об обновлении пользователя в RabbitMQ через UserDTO
-        UserDTO userDTO = mapToUserDTO(confirmationToken.getUser());
-        rabbitTemplate.convertAndSend("user.exchange", "user.updated", userDTO);
         return ResponseEntity.ok("confirmed");
     }
-
 }
