@@ -10,16 +10,20 @@ import lombok.*;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "message_templates")
-public class MessageTemplate extends AbstractEntity {
+@Table(name = "contacts")
+public class Contact extends AbstractEntity {
 
-    @Column(name = "title", nullable = false)
-    public String title;
+    @Column(name = "name", nullable = false)
+    private String name;
 
-    @Column(name = "body", nullable = false)
-    private String body;
+    @Column(name = "phone_number", nullable = false)
+    private String phoneNumber;
+
+    @Column(name = "email")
+    private String email;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
 }
