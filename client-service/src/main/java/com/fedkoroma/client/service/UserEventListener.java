@@ -7,6 +7,8 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 public class UserEventListener {
 
@@ -43,6 +45,8 @@ public class UserEventListener {
                 .email(userDTO.getEmail())
                 .firstName(userDTO.getFirstName())
                 .lastName(userDTO.getLastName())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(null)
                 .build();
     }
 
@@ -51,6 +55,7 @@ public class UserEventListener {
         user.setEmail(userDTO.getEmail());
         user.setFirstName(userDTO.getFirstName());
         user.setLastName(userDTO.getLastName());
+        user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user); // Не забывайте сохранять обновленного пользователя
         System.out.println("User updated event processed: " + user);
         return user;
