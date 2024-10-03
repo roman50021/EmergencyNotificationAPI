@@ -1,11 +1,14 @@
 package com.fedkoroma.security.controller;
 
 import com.fedkoroma.security.dto.AuthRequest;
+import com.fedkoroma.security.dto.AuthResponse;
 import com.fedkoroma.security.dto.MessageResponse;
 import com.fedkoroma.security.dto.UserRegistrationDTO;
+import com.fedkoroma.security.model.Role;
 import com.fedkoroma.security.model.User;
 import com.fedkoroma.security.repository.UserRepository;
 import com.fedkoroma.security.service.AuthService;
+import com.fedkoroma.security.service.JwtService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +33,7 @@ public class SecurityController {
     public final AuthService authService;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
+    private final JwtService jwtService;
 
     @PostMapping("/register")
     public ResponseEntity<?> addUser(@Valid @RequestBody UserRegistrationDTO userDto) {
@@ -71,9 +75,13 @@ public class SecurityController {
     }
 
     @GetMapping("/validate")
-    public  ResponseEntity<String> validateToken(@RequestParam("token") String token){
-        authService.validateToken(token);
-        return ResponseEntity.ok("Token is valid");
+    public ResponseEntity<AuthResponse> validateToken(@RequestParam("token") String token) {
+        String email = jwtService.extractUsername(token);
+        Boolean valid = jwtService.extractValid(token);
+        Role role = jwtService.extractRole(token);
+        jwtService.validateToken(token); // Проверяем токен
+        AuthResponse response = new AuthResponse(email, valid, role); // Пример заполнения
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping(path = "confirm")

@@ -1,5 +1,7 @@
 package com.fedkoroma.security.service;
 
+import com.fedkoroma.security.model.Role;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -27,8 +29,30 @@ public class JwtService {
         }
     }
 
-    public String generateToken(String email) {
+    public String extractUsername(final String token) {
+        Claims claims = Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token).getBody();
+        return claims.getSubject(); // Извлечение имени пользователя
+    }
+
+    public Boolean extractValid(final String token) {
+        Claims claims = Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token).getBody();
+        return !claims.getExpiration().before(new Date()); // Проверка срока действия токена
+    }
+
+    public Role extractRole(final String token) {
+        Claims claims = Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token).getBody();
+        String role = claims.get("role", String.class); // Извлекаем роль
+
+        if (role == null) {
+            throw new IllegalStateException("Role is missing in token");
+        }
+
+        return Role.valueOf(role); // Преобразуем строку в enum Role
+    }
+
+    public String generateToken(String email, Role role) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("role", role.name()); // Добавляем роль в claims
         return createToken(claims, email);
     }
 

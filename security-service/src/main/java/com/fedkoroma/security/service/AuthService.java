@@ -14,11 +14,13 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -78,12 +80,10 @@ public class AuthService {
         return "http://localhost:8765/auth/confirm?token=" + token;
     }
 
-    public String generateToken(String email){
-        return jwtService.generateToken(email);
-    }
-
-    public void validateToken(String token){
-        jwtService.validateToken(token);
+    public String generateToken(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return jwtService.generateToken(user.getEmail(), user.getRole());  // Передаем email и роль
     }
 
     private void sendEmail(User user, String token, String subject) {
