@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/contacts")
 @RequiredArgsConstructor
@@ -25,23 +27,35 @@ public class ContactController {
         return new ResponseEntity<>(createdContact, HttpStatus.CREATED);
     }
 
-    @GetMapping("/read")
-    public ResponseEntity<?> read() {
-        return null;
+    @GetMapping
+    public ResponseEntity<List<ContactDTO>> all(@RequestHeader("Authorization") String token) {
+        String email =  authService.getEmailFromToken(token);
+        List<ContactDTO> contacts = contactService.getAllContactsByUser(email);
+        return new ResponseEntity<>(contacts, HttpStatus.OK);
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<?> all() {
-        return null;
+    @GetMapping("/{id}")
+    public ResponseEntity<ContactDTO> getById(@PathVariable Long id,
+                                              @RequestHeader("Authorization") String token) {
+        String email = authService.getEmailFromToken(token);
+        ContactDTO contactDTO = contactService.getContactByIdAndUser(id, email);
+        return new ResponseEntity<>(contactDTO, HttpStatus.OK);
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<?> update() {
-        return null;
+    @PutMapping("/{id}")
+    public ResponseEntity<ContactDTO> update(@PathVariable Long id,
+                                    @RequestBody @Valid ContactDTO contactDTO,
+                                    @RequestHeader("Authorization") String token) {
+        String email = authService.getEmailFromToken(token);
+        ContactDTO updatedContact = contactService.updateContact(id, contactDTO, email);
+        return new ResponseEntity<>(updatedContact, HttpStatus.OK);
     }
 
-    @DeleteMapping ("/delete")
-    public ResponseEntity<?> delete() {
-        return null;
+    @DeleteMapping ("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id,
+                                       @RequestHeader("Authorization") String token) {
+        String email = authService.getEmailFromToken(token);
+        contactService.deleteContact(id, email);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
