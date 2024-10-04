@@ -7,7 +7,6 @@ import com.fedkoroma.client.model.Contact;
 import com.fedkoroma.client.model.User;
 import com.fedkoroma.client.repository.ContactRepository;
 import com.fedkoroma.client.repository.UserRepository;
-import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

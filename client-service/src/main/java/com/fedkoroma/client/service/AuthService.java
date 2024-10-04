@@ -25,7 +25,6 @@ public class AuthService {
         }
 
         String url = authServiceUrl + "/validate?token=" + token;
-        System.out.println(token);
         ResponseEntity<AuthResponse> response = restTemplate.getForEntity(url, AuthResponse.class);
 
         if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null && response.getBody().isValid()) {
