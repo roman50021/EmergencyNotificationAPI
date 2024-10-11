@@ -34,130 +34,108 @@ public class ContactUploadService {
     private final UserRepository userRepository;
 
     public void processFile(MultipartFile file, String emailOwner) throws Exception {
+        if (file.isEmpty()) {
+            log.error("Uploaded file is empty");
+            throw new IllegalArgumentException("Uploaded file is empty");
+        }
+
         String fileType = file.getContentType();
 
         if ("text/csv".equals(fileType)) {
             processCSVFile(file, emailOwner);
-        } else if ("application/vnd.ms-excel".equals(fileType) || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equals(fileType)) {
+        } else if (isExcelFile(fileType)) {
             processExcelFile(file, emailOwner);
         } else {
             throw new IllegalArgumentException("Unsupported file type");
         }
     }
 
+    private boolean isExcelFile(String fileType) {
+        return "application/vnd.ms-excel".equals(fileType) ||
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equals(fileType);
+    }
+
     private void processCSVFile(MultipartFile file, String emailOwner) throws Exception {
-        log.info("Started processing CSV file for user: " + emailOwner);
-
-        if (file.isEmpty()) {
-            log.error("Uploaded file is empty");
-            throw new IllegalArgumentException("Uploaded file is empty");
-        }
-
-        List<Contact> contacts = new ArrayList<>();
+        log.info("Started processing CSV file for user: {}", emailOwner);
 
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));
              CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withDelimiter(';').withHeader())) {
 
+            List<Contact> contacts = new ArrayList<>();
             for (CSVRecord record : csvParser) {
-                try {
-                    String name = record.get("name");
-                    String phoneNumber = record.get("phone");
-                    String email = record.get("email");
-
-                    // Проверка на пустые значения
-                    if (name == null || name.isEmpty() || phoneNumber == null || phoneNumber.isEmpty() || email == null || email.isEmpty()) {
-                        log.warn("Invalid contact data in CSV: name={}, phoneNumber={}, email={}", name, phoneNumber, email);
-                        continue; // пропустить эту запись, но продолжить обработку других
-                    }
-
-                    // Создание объекта Contact и добавление в список
-                    Contact contact = new Contact();
-                    contact.setName(name);
-                    contact.setPhoneNumber(phoneNumber);
-                    contact.setEmail(email);
-                    contacts.add(contact);
-
-                } catch (Exception recordException) {
-                    log.warn("Error processing record in CSV for user {}: {}", emailOwner, record.toString(), recordException);
-                    // Логируем ошибку, но продолжаем обработку других строк
-                }
+                addContactFromRecord(contacts, record.get("name"), record.get("phone"), record.get("email"));
             }
-
-            // Сохранение контактов, если они валидны
-            if (!contacts.isEmpty()) {
-                saveContacts(contacts, emailOwner);
-            } else {
-                log.warn("No valid contacts to save for user {}", emailOwner);
-            }
+            saveContacts(contacts, emailOwner);
 
         } catch (IOException e) {
-            log.error("Error reading CSV file for user {}: {}", emailOwner, e.getMessage(), e);
+            log.error("Error processing CSV file for user {}: {}", emailOwner, e.getMessage(), e);
             throw new Exception("Failed to upload and process file.", e);
         }
     }
 
     private void processExcelFile(MultipartFile file, String emailOwner) throws Exception {
-        log.info("Started processing Excel file for user: " + emailOwner);
-
-        if (file.isEmpty()) {
-            log.error("Uploaded file is empty");
-            throw new IllegalArgumentException("Uploaded file is empty");
-        }
+        log.info("Started processing Excel file for user: {}", emailOwner);
 
         try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
             Sheet sheet = workbook.getSheetAt(0);
             List<Contact> contacts = new ArrayList<>();
 
             for (Row row : sheet) {
-                String name = getCellValueAsString(row.getCell(0));
-                String phoneNumber = getCellValueAsString(row.getCell(1));
-                String email = getCellValueAsString(row.getCell(2));
-
-                if (name.isEmpty() || phoneNumber.isEmpty() || email.isEmpty()) {
-                    log.error("Invalid contact data: name={}, phoneNumber={}, email={}", name, phoneNumber, email);
-                    throw new IllegalArgumentException("Contact data is incomplete");
-                }
-
-                Contact contact = new Contact();
-                contact.setName(name);
-                contact.setPhoneNumber(phoneNumber);
-                contact.setEmail(email);
-                contacts.add(contact);
+                addContactFromRecord(contacts,
+                        getCellValueAsString(row.getCell(0)),
+                        getCellValueAsString(row.getCell(1)),
+                        getCellValueAsString(row.getCell(2)));
             }
-
             saveContacts(contacts, emailOwner);
+
         } catch (Exception e) {
             log.error("Error processing Excel file for user {}: {}", emailOwner, e.getMessage(), e);
             throw new Exception("Failed to upload and process file.", e);
         }
     }
 
-    private String getCellValueAsString(Cell cell) {
-        if (cell == null) {
-            return "";
+    private void addContactFromRecord(List<Contact> contacts, String name, String phone, String email) {
+        if (isInvalid(name, phone, email)) {
+            log.warn("Invalid contact data: name={}, phone={}, email={}", name, phone, email);
+            return;
         }
 
+        Contact contact = new Contact();
+        contact.setName(name);
+        contact.setPhoneNumber(phone);
+        contact.setEmail(email);
+        contacts.add(contact);
+    }
+
+    private boolean isInvalid(String name, String phone, String email) {
+        return name == null || name.isEmpty() ||
+                phone == null || phone.isEmpty() ||
+                email == null || email.isEmpty();
+    }
+
+    private String getCellValueAsString(Cell cell) {
+        if (cell == null) return "";
         switch (cell.getCellType()) {
-            case STRING:
-                return cell.getStringCellValue();
-            case NUMERIC:
-                return String.valueOf((long) cell.getNumericCellValue());
-            case BOOLEAN:
-                return String.valueOf(cell.getBooleanCellValue());
-            default:
-                return "";
+            case STRING: return cell.getStringCellValue();
+            case NUMERIC: return String.valueOf((long) cell.getNumericCellValue());
+            case BOOLEAN: return String.valueOf(cell.getBooleanCellValue());
+            default: return "";
         }
     }
 
     private void saveContacts(List<Contact> contacts, String emailOwner) {
-        // Логика для сохранения контактов в базе данных
+        if (contacts.isEmpty()) {
+            log.warn("No valid contacts to save for user {}", emailOwner);
+            return;
+        }
+
         User owner = userRepository.findByEmail(emailOwner)
                 .orElseThrow(() -> new EmailNotFoundException("User not found"));
 
-        for (Contact contact : contacts){
+        contacts.forEach(contact -> {
             contact.setUser(owner);
             contactRepository.save(contact);
-        }
+        });
     }
 }

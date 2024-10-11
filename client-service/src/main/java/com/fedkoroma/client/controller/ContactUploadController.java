@@ -17,8 +17,14 @@ public class ContactUploadController {
     private final AuthService authService;
 
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadContactsFile(@RequestParam("file") MultipartFile file,
+    public ResponseEntity<String> uploadContactsFile(@RequestParam(value = "file", required = false) MultipartFile file,
                                                      @RequestHeader("Authorization") String token) {
+        // Проверка наличия файла
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("No file uploaded. Please upload a valid file.");
+        }
+
         String email = authService.getEmailFromToken(token);
         try {
             contactUploadService.processFile(file, email);
