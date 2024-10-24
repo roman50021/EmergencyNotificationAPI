@@ -14,7 +14,7 @@ import lombok.*;
 public class MessageTemplate extends AbstractEntity {
 
     @Column(name = "title", nullable = false)
-    public String title;
+    private String title;
 
     @Column(name = "body", nullable = false)
     private String body;
