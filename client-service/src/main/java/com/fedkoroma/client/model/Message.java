@@ -1,11 +1,14 @@
 package com.fedkoroma.client.model;
 
 import com.fedkoroma.client.model.contract.AbstractEntity;
+import com.fedkoroma.client.model.enums.DeliveryMethod;
+import com.fedkoroma.client.model.enums.DeliveryStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -27,6 +30,13 @@ public class Message extends AbstractEntity {
             inverseJoinColumns = @JoinColumn(name = "contact_id")
     )
     private List<Contact> recipients;
+
+    @ElementCollection(targetClass = DeliveryMethod.class)
+    @CollectionTable(name = "message_delivery_methods",
+            joinColumns = @JoinColumn(name = "message_id"))
+    @Column(name = "delivery_method")
+    @Enumerated(EnumType.STRING)
+    private Set<DeliveryMethod> deliveryMethods;
 
     @Enumerated(EnumType.STRING)
     private DeliveryStatus status;
